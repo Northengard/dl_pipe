@@ -1,0 +1,55 @@
+prefix: 'baseline'
+
+num_blocks: 4
+channels_multiplier: 2
+start_channels: 3
+num_classes: 2
+first_conv:
+    kernel_size: 5
+    stride: 3
+    padding: 2
+    out_channels: 64
+base_conv:
+    kernel_size: 3
+    stride: 1
+    padding: 1
+pooling:
+    type: 'max'
+    kernel_size: 2
+    stride: 2
+    padding: 0
+
+snapshot:
+    use: no
+    epoch: 0
+
+num_workers: 8
+parallel: no
+
+save_freq: 2
+snapshot_save_path: './snapshots'
+
+loss: ''
+optimizer: 'SGD'
+
+learning_rate:
+    value: 0.005
+    decay: 0.1
+    min_val: 0.00005
+#    sheduler:
+#        name: 'step'
+#        milestones: [7,14]
+    sheduler:
+        name: 'plateau'
+        no_improve: 5
+weight_decay: 0.0001
+update_step: 1
+clip_grad_threshold: 0.5
+
+batch_size: 10
+num_epochs: 100
+step_counters:
+    train: 0
+
+# data
+input_size: []
