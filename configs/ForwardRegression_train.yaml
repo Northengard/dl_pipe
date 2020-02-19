@@ -1,23 +1,25 @@
 prefix: 'baseline'
 
-num_blocks: 4
-channels_multiplier: 2
-start_channels: 3
-num_classes: 2
-first_conv:
-    kernel_size: 5
-    stride: 3
-    padding: 2
-    out_channels: 64
-base_conv:
-    kernel_size: 3
-    stride: 1
-    padding: 1
-pooling:
-    type: 'max'
-    kernel_size: 2
-    stride: 2
-    padding: 0
+model:
+    name: 'ForwardRegression'
+    num_blocks: 4
+    channels_multiplier: 2
+    start_channels: 3
+    num_classes: 2
+    first_conv:
+        kernel_size: 5
+        stride: 3
+        padding: 2
+        out_channels: 64
+    base_conv:
+        kernel_size: 3
+        stride: 1
+        padding: 1
+    pooling:
+        type: 'max'
+        kernel_size: 2
+        stride: 2
+        padding: 0
 
 snapshot:
     use: no

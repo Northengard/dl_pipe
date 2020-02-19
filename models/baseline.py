@@ -8,13 +8,10 @@ _poolings = {
 
 
 class ConvBnReluPool(nn.Module):
-    """
-    Convolution -> ReLu -> Pooling block as one module
-    """
 
     def __init__(self, in_channels, out_channels, conv_params, pool_type, pool_params):
         """
-        Parameters
+        Convolution -> ReLu -> BN -> Pooling block as one module
         :param pool_type: str, 'avg' or 'max' are available
         :param pool_params:
         :param conv_params:
@@ -36,6 +33,13 @@ class ConvBnReluPool(nn.Module):
 
 class ForwardRegression(nn.Module):
     def __init__(self, config):
+        """
+        Base line model.
+        Simple convolutional network
+        with N blocks: Convolution-->ReLu-->BatchNorm-->Pooling
+        Transforms image to logits K-vector where K is number of classes
+        :param config: dictionary with main parameters. See configs/ directory for an example
+        """
         super(ForwardRegression, self).__init__()
 
         self._fconv_out = config['first_conv']['out_channels']
@@ -73,7 +77,6 @@ class ForwardRegression(nn.Module):
                                                    conv_params=config['base_conv'],
                                                    pool_type=self.pool_type,
                                                    pool_params=config['pooling']))
-            print(block_in_channels, block_out_channels)
         self.main_blocks = nn.Sequential(*self.main_blocks)
         self.pre_fc = nn.AdaptiveAvgPool2d(output_size=(1, 1))
         # self.pre_fc = torch.flatten
