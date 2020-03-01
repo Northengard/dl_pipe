@@ -1,6 +1,10 @@
+from os import path
+from glob import glob
 import torch
+from json import load
 from torch.utils.data import Dataset
-from torch.nn import LocalResponseNorm
+
+from utils.storage import load_image
 
 
 class Dummy(Dataset):
@@ -20,4 +24,23 @@ class Dummy(Dataset):
 
 class DFCDataset(Dataset):
     def __init__(self, data_dir, transform=None):
-        self.len = 0
+        self._data = glob(path.join(data_dir, '*.jpg'))
+        self._len = len(self._data)
+        self._transform = transform
+        self._annotations = glob(path.join(data_dir, '*.json'))[0]
+        with open(self._annotations) as anf:
+            self._annotations = load(anf)
+
+    def __len__(self):
+        return self._len
+
+    def __getitem__(self, index):
+        sample = dict()
+        img = load_image(self._data[index])
+        img_name = path.basename(self._data[index])
+        label = self._annotations[img_name]
+        sample['images'] = img
+        sample['labels'] = label
+        if self._transform:
+            sample = self._transform(sample)
+        return sample

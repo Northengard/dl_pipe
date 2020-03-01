@@ -1,6 +1,7 @@
 import os
 import yaml
 import torch
+import cv2
 
 
 _save_load_path = 'snapshots'
@@ -33,3 +34,7 @@ def save_weights(model, prefix, model_type, epoch, parallel=True):
     else:
         state_dict = model.state_dict()
     torch.save({'state_dict': state_dict}, file)
+
+
+def load_image(imp_path):
+    return cv2.imread(imp_path)

@@ -40,7 +40,8 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step=3):
                     annotations[face_path] = labels[meta_data[vid]['label']]
                     face_path = os.path.join(save_img_dir, face_path)
                     cv2.imwrite(face_path, face)
-            tq.update(1)
+                tq.update(step)
+        tq.close()
     annot_path = os.path.join(save_img_dir, 'lables.json')
     with open(annot_path, 'w') as outpf:
         json.dump(annotations, outpf)

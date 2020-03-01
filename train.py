@@ -71,14 +71,14 @@ def train(model, data_loader, criterion, optimizer, epoch, device, apply_sigmoid
         images = batch['images']
         images = images.to(device)
 
-        true_lables = batch['lables']
-        true_lables = true_lables.to(device)
+        true_labels = batch['labels']
+        true_labels = true_labels.to(device)
 
         output = model(images)
         if apply_sigmoid:
             output = torch.sigmoid(output)
 
-        loss = criterion(output, true_lables)
+        loss = criterion(output, true_labels)
         loss_handler.update(loss.item())
         loss.backward()
 
