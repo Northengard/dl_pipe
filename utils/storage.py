@@ -2,6 +2,8 @@ import os
 import yaml
 import torch
 import cv2
+import logging
+from io import StringIO
 
 
 _save_load_path = 'snapshots'
@@ -38,3 +40,38 @@ def save_weights(model, prefix, model_type, epoch, parallel=True):
 
 def load_image(imp_path):
     return cv2.imread(imp_path)
+
+
+class TqdmToLogger(StringIO):
+    """
+        Output stream for TQDM which will output to logger module instead of
+        the StdOut.
+    """
+    logger = None
+    level = None
+    buf = ''
+
+    def __init__(self, logger, level=None):
+        super(TqdmToLogger, self).__init__()
+        self.logger = logger
+        self.level = level or logging.INFO
+
+    def write(self, buf):
+        self.buf = buf.strip('\r\n\t ')
+
+    def flush(self):
+        self.logger.log(self.level, self.buf)
+
+
+def get_logger(logger_path):
+    # create logger for prd_ci
+    logger_name = os.path.basename(logger_path)
+    log = logging.getLogger(logger_name)
+    log.setLevel(level=logging.DEBUG)
+
+    # create file handler for logger.
+    fh = logging.FileHandler(logger_path)
+    fh.setLevel(level=logging.DEBUG)
+
+    log.addHandler(fh)
+    return log
