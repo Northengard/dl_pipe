@@ -3,8 +3,21 @@ from glob import glob
 import torch
 from json import load
 from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
 
 from utils.storage import load_image
+
+
+def get_dataset(config, get_dummy=False):
+    if get_dummy:
+        loader = DataLoader(Dummy(len=100), batch_size=config['batch_size'],
+                            shuffle=False,
+                            num_workers=config['num_workers'])
+    else:
+        loader = DataLoader(DFCDataset(data_dir=config['data_dir']), batch_size=config['batch_size'],
+                            shuffle=False,
+                            num_workers=config['num_workers'])
+    return loader
 
 
 class Dummy(Dataset):
