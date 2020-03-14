@@ -27,7 +27,7 @@ from utils.storage import TqdmToLogger, get_logger
 VID_NUM_FRAMES = 300
 FPS = 30
 LOG_DIR = list(map(lambda x: os.path.basename(x) == 'dl_pipe', os.sys.path)).index(True)
-LOG_DIR = os.path.join(os.sys.path[LOG_DIR], 'logs')
+LOG_DIR = os.path.join(os.sys.path[LOG_DIR], 'logs', 'data_processing')
 
 if not os.path.exists(LOG_DIR):
     os.mkdir(LOG_DIR)
@@ -70,7 +70,7 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step=3, nam
                     cv2.imwrite(face_path, face)
                 tq.update(step)
         tq.close()
-    annot_path = os.path.join(save_img_dir, 'lables.json')
+    annot_path = os.path.join(save_img_dir, 'labels.json')
     with open(annot_path, 'w') as outpf:
         json.dump(annotations, outpf)
 

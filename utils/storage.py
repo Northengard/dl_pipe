@@ -4,9 +4,39 @@ import torch
 import cv2
 import logging
 from io import StringIO
+from torch.utils.tensorboard import SummaryWriter
 
 
 _save_load_path = 'snapshots'
+_tensorboard_default_path = os.path.join('logs', 'training')
+
+
+def _default_paths_init_():
+    global _save_load_path, _tensorboard_default_path
+    if not os.path.exists(_save_load_path):
+        os.mkdir(_save_load_path)
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    if not os.path.exists(_tensorboard_default_path):
+        os.mkdir(_tensorboard_default_path)
+
+
+_default_paths_init_()
+
+
+def get_writer(config):
+    global _tensorboard_default_path
+    if config['experiment']['change_tensorboard_log_dir']:
+        change_tboard_dir(new_path=config['experiment']['tensorboard_log_dir_path'])
+    experiment_log_dir = os.path.join(_tensorboard_default_path, config['experiment']['name'])
+    writer = SummaryWriter(experiment_log_dir)
+    return writer
+
+
+def change_tboard_dir(new_path):
+    global _tensorboard_default_path
+    if os.path.exists(new_path):
+        _tensorboard_default_path = new_path
 
 
 def config_loader(conf_path):

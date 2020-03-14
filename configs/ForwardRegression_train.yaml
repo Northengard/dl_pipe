@@ -1,5 +1,9 @@
-prefix: 'baseline'
+experiment:
+    name: 'baseline_model_first'
+    change_tensorboard_log_dir: no
+    tensorboard_log_dir_path: ''
 
+prefix: 'baseline'
 model:
     name: 'ForwardRegression'
     num_blocks: 4
@@ -32,6 +36,7 @@ save_freq: 2
 snapshot_save_path: './snapshots'
 
 loss: 'bce_with_logits'
+metric: 'accuracy'
 optimizer: 'SGD'
 
 learning_rate:
@@ -43,10 +48,15 @@ weight_decay: 0.0001
 update_step: 1
 clip_grad_threshold: 0.5
 
-batch_size: 10
 num_epochs: 100
 step_counters:
     train: 0
 
 # data
-input_size: []
+input_size: [480, 270]
+train:
+    data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/images_data/train'
+    batch_size: 30
+validation:
+    data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/images_data/validation'
+    batch_size: 40

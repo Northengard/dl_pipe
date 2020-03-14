@@ -1,3 +1,3 @@
-from .dfc_dataset import Dummy, DFCDataset
+from .dfc_dataset import get_dfc_dataset
 
-__all__ = ['Dummy', 'DFCDataset']
+__all__ = ['get_dfc_dataset']

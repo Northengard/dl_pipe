@@ -1,37 +1,48 @@
 from os import path
 from glob import glob
-import torch
 from json import load
+
+import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 from utils.storage import load_image
+from data.transformations.color import ColorTransform
+
+ColorTransform()
 
 
-def get_dataset(config, get_dummy=False):
+def get_dfc_dataset(config, get_dummy=False):
     if get_dummy:
-        loader = DataLoader(Dummy(len=100), batch_size=config['batch_size'],
-                            shuffle=False,
-                            num_workers=config['num_workers'])
+        train_loader = DataLoader(Dummy(length=100), batch_size=config['batch_size'],
+                                  shuffle=True,
+                                  num_workers=config['num_workers'])
+        test_loader = train_loader
     else:
-        loader = DataLoader(DFCDataset(data_dir=config['data_dir']), batch_size=config['batch_size'],
-                            shuffle=False,
-                            num_workers=config['num_workers'])
-    return loader
+        train_loader = DataLoader(DFCDataset(data_dir=config['train']['data_dir']),
+                                  batch_size=config['train']['batch_size'],
+                                  shuffle=True,
+                                  num_workers=config['num_workers'])
+
+        test_loader = DataLoader(DFCDataset(data_dir=config['validation']['data_dir']),
+                                 batch_size=config['validation']['batch_size'],
+                                 shuffle=False,
+                                 num_workers=config['num_workers'])
+    return train_loader, test_loader
 
 
 class Dummy(Dataset):
-    def __init__(self, len=100):
-        self.len = len
-        self.data = torch.rand(self.len, 3, 540, 640)
+    def __init__(self, length=100):
+        self.len = length
+        self.data = torch.rand(self.len, 3, 480, 270)
 
     def __len__(self):
         return self.len
 
     def __getitem__(self, index):
-        lables = torch.tensor([0, 1]) if torch.rand(1) > 0.5 else torch.tensor([1, 0])
-        lables = lables.to(torch.float32)
-        sample = {'images': self.data[index], 'lables': lables}
+        labels = torch.tensor([0, 1]) if torch.rand(1) > 0.5 else torch.tensor([1, 0])
+        labels = labels.to(torch.float32)
+        sample = {'images': self.data[index], 'labels': labels}
         return sample
 
 
