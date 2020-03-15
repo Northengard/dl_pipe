@@ -7,13 +7,13 @@ from torch.nn import LocalResponseNorm
 
 class Normalize(object):
     def __call__(self, sample):
-        image = sample['image']
+        image = sample['images']
         image = image.astype('uint8')
         real_img = image.copy()
         if len(image.shape) > 2:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = ((image * 2) / 255) - 1
-        sample['image'] = image
+        sample['images'] = image
         sample['real_image'] = real_img
         return sample
 
@@ -44,7 +44,7 @@ class LocalContrastNorm(object):
         return gaussian / np.sum(gaussian)
 
     def __call__(self, sample):
-        image = sample['image']
+        image = sample['images']
         real_image = image.copy()
         image_tensor = torch.from_numpy(
             np.expand_dims(
@@ -76,7 +76,7 @@ class LocalContrastNorm(object):
 
         if len(scaled_transformed_img.shape) > 2:
             scaled_transformed_img = cv2.cvtColor(scaled_transformed_img, cv2.COLOR_BGR2GRAY)
-        sample['image'] = scaled_transformed_img
+        sample['images'] = scaled_transformed_img
         sample['real_image'] = real_image
 
         return sample
@@ -96,7 +96,7 @@ class LocalRespNorm(object):
         self.LocalResponseNorm = LocalResponseNorm(size, alpha, beta, k)
 
     def __call__(self, sample):
-        image = sample['image']
+        image = sample['images']
         if len(image.shape) < 3:
             image = np.expand_dims(image, 2)
         real_image = image.copy()
@@ -118,6 +118,34 @@ class LocalRespNorm(object):
         if len(scaled_transformed_img.shape) > 2:
             scaled_transformed_img = cv2.cvtColor(scaled_transformed_img, cv2.COLOR_BGR2GRAY)
 
-        sample['image'] = scaled_transformed_img
+        sample['images'] = scaled_transformed_img
         sample['real_image'] = real_image
+        return sample
+
+
+class ToTensor(object):
+    """
+    Convert ndarrays in sample to Tensors.
+    """
+
+    # def __init__(self, with_angles=False):
+    #     self.with_angles = with_angles
+
+    def __call__(self, sample):
+        image, segmentation_maps = sample['images'], sample['segmentation_maps']
+        # swap color axis because
+        # numpy image: H x W x C
+        # torch image: C X H X W
+        # image = image.transpose((2, 0, 1))
+        image = np.expand_dims(image, axis=0)
+        # if not self.with_angles:
+        #     gaze = gaze[:-1]
+        image = torch.from_numpy(image)
+        image = image.to(torch.float32)
+
+        segmentation_maps = segmentation_maps.transpose(2, 0, 1)
+        segmentation_maps = torch.from_numpy(segmentation_maps)
+        segmentation_maps = segmentation_maps.to(torch.float32)
+
+        sample['images'] = image
         return sample

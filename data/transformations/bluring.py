@@ -13,12 +13,12 @@ class GaussianBlur(object):
         self.kernels = list(range(min_blur_kernel, max_blur_kernel, 2))
 
     def __call__(self, sample):
-        image = sample['image']
+        image = sample['images']
         # kernel size
         k_size = np.random.choice(self.kernels)
         # 0 means that sigmaX and sigmaY calculates from kernel
         image = cv2.GaussianBlur(image, (k_size, k_size), 0)
-        sample['image'] = image
+        sample['images'] = image
         return sample
 
 
@@ -32,9 +32,9 @@ class CompressionArtifacts(object):
         self.downscale = downscale
 
     def __call__(self, sample):
-        image = sample['image']
+        image = sample['images']
         h, w = image.shape[:2]
         image = cv2.resize(image, (w // self.downscale, h // self.downscale))
         image = cv2.resize(image, (w, h))
-        sample['image'] = image
+        sample['images'] = image
         return sample

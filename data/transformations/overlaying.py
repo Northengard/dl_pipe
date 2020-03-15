@@ -50,7 +50,7 @@ class ImageOverlaying(object):
         return target
 
     def __call__(self, sample):
-        image = sample['image']
+        image = sample['images']
         if self.change_background:
             overlay_img, back_img = np.random.choice(self.images, 2)
             image = self._change_background(image, back_img)
@@ -62,7 +62,7 @@ class ImageOverlaying(object):
         else:
             ovc = np.random.uniform(0.12, 0.2)
         image = cv2.addWeighted(image, (1 - ovc), overlay_img, ovc, 0)
-        sample['image'] = image
+        sample['images'] = image
         return sample
 
 
@@ -84,7 +84,7 @@ class BackgroundShifter(object):
             self.images.append(cv2.imread(path))
 
     def __call__(self, sample):
-        img = sample['image']
+        img = sample['images']
         back_img = np.random.choice(self.images)
         back_img = cv2.resize(back_img, img.shape[:-1][::-1])
         back_mask = np.ones(img.shape[:-1])
@@ -96,7 +96,7 @@ class BackgroundShifter(object):
         back_img[~back_mask] = 0
         img[back_mask] = 0
         img = img + back_img
-        sample['image'] = img
+        sample['images'] = img
         return sample
 
 
@@ -122,9 +122,9 @@ class DrawLines(object):
 
     def __call__(self, sample):
         line_number = 1 if np.random.rand() > 0.5 else 2
-        image = sample['image']
+        image = sample['images']
         for num in range(line_number):
             image = self._draw_line(image)
 
-        sample['image'] = image
+        sample['images'] = image
         return sample

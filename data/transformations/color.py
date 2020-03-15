@@ -43,9 +43,9 @@ class ColorTransform(object):
                                          hue=self.hue)
 
     def __call__(self, sample):
-        image = sample['image']
+        image = sample['images']
         pil_img = Image.fromarray(image)
         pil_img = self.cj(pil_img)
         image = np.array(pil_img)
-        sample['image'] = image
+        sample['images'] = image
         return sample

@@ -18,15 +18,13 @@ class Rescale(object):
             self.output_size = output_size
 
     def __call__(self, sample):
-        image, segmentation_maps = sample['image'], sample['segmentation_maps']
+        image = sample['images']
 
         new_w, new_h = self.output_size
         new_h, new_w = int(new_h), int(new_w)
 
         img = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
-        seg_maps = cv2.resize(segmentation_maps, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
-        sample['image'] = img
-        sample['segmentation_maps'] = seg_maps
+        sample['images'] = img
 
         return sample
