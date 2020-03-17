@@ -6,12 +6,15 @@ from torch.nn import LocalResponseNorm
 
 
 class Normalize(object):
+    """
+    Classical normalization
+    """
     def __call__(self, sample):
         image = sample['images']
         image = image.astype('uint8')
         real_img = image.copy()
-        if len(image.shape) > 2:
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # if len(image.shape) > 2:
+        #     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = ((image * 2) / 255) - 1
         sample['images'] = image
         sample['real_image'] = real_img
