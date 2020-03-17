@@ -74,8 +74,8 @@ class LocalContrastNorm(object):
         denominator = (transformed_img.max() - transformed_img.min()) + 1e-6  # to avoid zero division
         scaled_transformed_img = numerator / denominator
 
-        if len(scaled_transformed_img.shape) > 2:
-            scaled_transformed_img = cv2.cvtColor(scaled_transformed_img, cv2.COLOR_BGR2GRAY)
+        # if len(scaled_transformed_img.shape) > 2:
+        #     scaled_transformed_img = cv2.cvtColor(scaled_transformed_img, cv2.COLOR_BGR2GRAY)
         sample['images'] = scaled_transformed_img
         sample['real_image'] = real_image
 
@@ -113,10 +113,10 @@ class LocalRespNorm(object):
         denominator = (transformed_img.max() - transformed_img.min()) + 1e-6  # to avoid zero division
         scaled_transformed_img = numerator / denominator
 
-        if scaled_transformed_img.shape[2] == 1:
-            scaled_transformed_img = np.squeeze(scaled_transformed_img)
-        if len(scaled_transformed_img.shape) > 2:
-            scaled_transformed_img = cv2.cvtColor(scaled_transformed_img, cv2.COLOR_BGR2GRAY)
+        # if scaled_transformed_img.shape[2] == 1:
+        #     scaled_transformed_img = np.squeeze(scaled_transformed_img)
+        # if len(scaled_transformed_img.shape) > 2:
+        #     scaled_transformed_img = cv2.cvtColor(scaled_transformed_img, cv2.COLOR_BGR2GRAY)
 
         sample['images'] = scaled_transformed_img
         sample['real_image'] = real_image
@@ -132,20 +132,14 @@ class ToTensor(object):
     #     self.with_angles = with_angles
 
     def __call__(self, sample):
-        image, segmentation_maps = sample['images'], sample['segmentation_maps']
+        image = sample['images']
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
         # image = image.transpose((2, 0, 1))
-        image = np.expand_dims(image, axis=0)
-        # if not self.with_angles:
-        #     gaze = gaze[:-1]
+        # image = np.expand_dims(image, axis=0)
         image = torch.from_numpy(image)
         image = image.to(torch.float32)
-
-        segmentation_maps = segmentation_maps.transpose(2, 0, 1)
-        segmentation_maps = torch.from_numpy(segmentation_maps)
-        segmentation_maps = segmentation_maps.to(torch.float32)
 
         sample['images'] = image
         return sample

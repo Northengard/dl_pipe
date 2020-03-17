@@ -7,9 +7,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 from utils.storage import load_image
-from data.transformations.color import ColorTransform
-
-ColorTransform()
+from data.transformations import Transforms
 
 
 def get_dfc_dataset(config, get_dummy=False):
@@ -19,12 +17,14 @@ def get_dfc_dataset(config, get_dummy=False):
                                   num_workers=config['num_workers'])
         test_loader = train_loader
     else:
-        train_loader = DataLoader(DFCDataset(data_dir=config['train']['data_dir']),
+        train_loader = DataLoader(DFCDataset(data_dir=config['train']['data_dir'],
+                                             transform=Transforms(config['input_size'])),
                                   batch_size=config['train']['batch_size'],
                                   shuffle=True,
                                   num_workers=config['num_workers'])
 
-        test_loader = DataLoader(DFCDataset(data_dir=config['validation']['data_dir']),
+        test_loader = DataLoader(DFCDataset(data_dir=config['validation']['data_dir'],
+                                            transform=Transforms(config['input_size'])),
                                  batch_size=config['validation']['batch_size'],
                                  shuffle=False,
                                  num_workers=config['num_workers'])

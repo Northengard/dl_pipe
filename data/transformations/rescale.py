@@ -8,8 +8,6 @@ class Rescale(object):
         :param output_size: (tuple or int): Desired output size. If tuple, output is
                                             matched to output_size. If int, smaller of image edges is matched
                                             to output_size keeping aspect ratio the same.
-        :param lmrks_only: (bool)
-        :param angles_only: (bool)
         """
         assert isinstance(output_size, (int, tuple))
         if type(output_size) == int:

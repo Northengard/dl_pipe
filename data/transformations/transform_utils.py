@@ -49,8 +49,12 @@ class RandomApply(object):
 
 # GENERAL
 class Transforms(object):
-    def __init__(self,
-                 input_size, train=False):
+    def __init__(self, input_size, train=False):
+        """
+        Class to combine all Transformations together.
+        :param input_size: tuple, network image input size (w, h)
+        :param train: bool, train flag to apply train transformations
+        """
         self.train = train
         self.input_size = input_size
 
