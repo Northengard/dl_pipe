@@ -1,5 +1,7 @@
 # os
 import os
+import sys
+from datetime import datetime
 from argparse import ArgumentParser
 from tqdm import tqdm
 
@@ -14,8 +16,9 @@ import models
 import losses
 import metrics
 from data.datasets import get_dfc_dataset
-from utils.storage import config_loader, load_weights, save_weights, get_writer
 from utils.handlers import AverageMeter, get_learning_rate
+from utils.storage import config_loader, load_weights, save_weights, get_writer
+from utils.logger import Logger
 
 
 def parse_args(arguments):
@@ -229,4 +232,8 @@ def main(config):
 if __name__ == '__main__':
     args = parse_args(os.sys.argv[1:])
     cfg = config_loader(args.config)
+    date = str(datetime.now())
+    sys.stdout = Logger(exp_name=cfg['experiment']['name'], filename=f"RUN_{date}.log", stderr=True)
+    sys.stderr = Logger(exp_name=cfg['experiment']['name'], filename=f"RUN_{date}.err", stderr=False)
+    print('Run Logging of execution')
     main(cfg)
