@@ -79,7 +79,7 @@ def _get_factorized_bbox(face_coords, bbox_factor):
     top = int(max(0, top - bias_h))
     left = int(max(0, left - bias_w))
     bottom = int(min(IMAGE_HEIGHT, top + new_h))
-    right = int(max(IMAGE_WIDTH, left + new_w))
+    right = int(min(IMAGE_WIDTH, left + new_w))
     return top, right, bottom, left
 
 
