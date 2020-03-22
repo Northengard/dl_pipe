@@ -13,7 +13,8 @@ import cv2
 from imageio import get_reader
 
 # face search
-from face_recognition import face_locations
+# from face_recognition import face_locations
+from mtcnn.mtcnn import MTCNN
 
 # util
 import numpy as np
@@ -21,8 +22,7 @@ from sklearn.model_selection import train_test_split
 if __name__ == '__main__':
     root_dir = os.path.dirname(os.path.dirname(os.sys.path[0]))
     os.sys.path.append(root_dir)
-from utils.storage import TqdmToLogger, get_logger
-
+from utils.logger import TqdmToLogger, get_logger
 
 VID_NUM_FRAMES = 300
 FPS = 30
@@ -53,7 +53,7 @@ def parse_args(argv):
                         help='grabbing images step')
     parser.add_argument('-n', '--n-jobs',
                         type=int,
-                        default=4,
+                        default=12,
                         help='number of threads')
     parser.add_argument('-ff', '--face-bbox-expand-factor',
                         type=tuple,
@@ -70,18 +70,16 @@ def _get_factorized_bbox(face_coords, bbox_factor):
     :return: scaled_top, scaled_right, scaled_bottom, scaled_left
     """
     global IMAGE_WIDTH, IMAGE_HEIGHT
-    top, right, bottom, left = face_coords
-    face_w = right - left
-    face_h = bottom - top
+    left, top, face_w, face_h = face_coords
     new_w = face_w * bbox_factor[0]
     new_h = face_h * bbox_factor[1]
-    bias_w = int((new_w - face_w) // 2)
-    bias_h = int((new_h - face_h) // 2)
+    bias_w = (new_w - face_w) // 2
+    bias_h = (new_h - face_h) // 2
     # to avoid going abroad image
-    top = max(0, top - bias_h)
-    left = max(0, left - bias_w)
-    bottom = min(IMAGE_HEIGHT, bottom + bias_h)
-    right = max(IMAGE_WIDTH, right + bias_w)
+    top = int(max(0, top - bias_h))
+    left = int(max(0, left - bias_w))
+    bottom = int(min(IMAGE_HEIGHT, top + new_h))
+    right = int(max(IMAGE_WIDTH, left + new_w))
     return top, right, bottom, left
 
 
@@ -101,6 +99,7 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step, bbox_
     log_path = name + '.log'
     logger = get_logger(log_path)
     tqdm_out = TqdmToLogger(logger, level=logging.INFO)
+    face_detector = MTCNN()
 
     logger.info(" ".join(['thread ', name, 'start']))
     logger.info('saving into ' + save_img_dir)
@@ -111,13 +110,16 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step, bbox_
         v = get_reader(os.path.join(root_video_dir, vid))
         img_prefix = vid.split('.')[0]
         tq = tqdm(total=VID_NUM_FRAMES, file=tqdm_out)
-        for idx, im in enumerate(v):
-            if idx % step == 0:
-                faces = face_locations(im)
-                for fc_coords in faces:
-                    top, right, bottom, left = _get_factorized_bbox(fc_coords, bbox_factor)
-                    face = im[top:bottom, left:right]
-                    face_path = img_prefix + "_" + str(idx) + '.jpg'
+        for frame_idx, image in enumerate(v):
+            if frame_idx % step == 0:
+                # faces = face_locations(image)
+                faces = face_detector.detect_faces(image)
+                for face_idx, fc_coords in enumerate(faces):
+                    if fc_coords['confidence'] < 0.9:
+                        continue
+                    top, right, bottom, left = _get_factorized_bbox(fc_coords['box'], bbox_factor)
+                    face = image[top:bottom, left:right]
+                    face_path = "_".join([img_prefix, 'face_idx', str(face_idx), 'frame', str(frame_idx) + '.jpg'])
                     annotations[face_path] = labels[meta_data[vid]['label']]
                     face_path = os.path.join(save_img_dir, face_path)
                     cv2.imwrite(face_path, face)
