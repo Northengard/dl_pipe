@@ -2,6 +2,7 @@ import os
 import yaml
 import torch
 import cv2
+import json
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -68,3 +69,9 @@ def save_weights(model, prefix, model_type, epoch, parallel=True):
 
 def load_image(imp_path):
     return cv2.imread(imp_path)
+
+
+def save_json(path, filename, data):
+    file_path = os.path.join(path, filename)
+    with open(file_path, 'w') as outpf:
+        json.dump(data, outpf)

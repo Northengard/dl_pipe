@@ -6,6 +6,7 @@ import json
 
 # multiprocessing
 from multiprocessing import Process
+from multiprocessing import Manager
 import logging
 
 # image/video handlers
@@ -20,8 +21,9 @@ from mtcnn.mtcnn import MTCNN
 import numpy as np
 from sklearn.model_selection import train_test_split
 if __name__ == '__main__':
-    root_dir = os.path.dirname(os.path.dirname(os.sys.path[0]))
-    os.sys.path.append(root_dir)
+    root_video_directory = os.path.dirname(os.path.dirname(os.sys.path[0]))
+    os.sys.path.append(root_video_directory)
+from utils.storage import save_json
 from utils.logger import TqdmToLogger, get_logger
 
 VID_NUM_FRAMES = 300
@@ -95,7 +97,7 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step, bbox_
     :param name: log file name
     :return: None
     """
-    global VID_NUM_FRAMES
+    global VID_NUM_FRAMES, _ANNOTATIONS
     log_path = name + '.log'
     logger = get_logger(log_path)
     tqdm_out = TqdmToLogger(logger, level=logging.INFO)
@@ -104,7 +106,6 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step, bbox_
     logger.info(" ".join(['thread ', name, 'start']))
     logger.info('saving into ' + save_img_dir)
 
-    annotations = dict()
     labels = dict({'FAKE': 1, 'REAL': 0})
     for vid in tqdm(videos_list, file=tqdm_out):
         v = get_reader(os.path.join(root_video_dir, vid))
@@ -120,69 +121,69 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step, bbox_
                     top, right, bottom, left = _get_factorized_bbox(fc_coords['box'], bbox_factor)
                     face = image[top:bottom, left:right]
                     face_path = "_".join([img_prefix, 'face_idx', str(face_idx), 'frame', str(frame_idx) + '.jpg'])
-                    annotations[face_path] = labels[meta_data[vid]['label']]
+                    _ANNOTATIONS[face_path] = labels[meta_data[vid]['label']]
                     face_path = os.path.join(save_img_dir, face_path)
                     cv2.imwrite(face_path, face)
                 tq.update(step)
+                if frame_idx > 2:
+                    break
         tq.close()
-    annot_path = os.path.join(save_img_dir, 'labels.json')
-    with open(annot_path, 'w') as outpf:
-        json.dump(annotations, outpf)
+        break
 
 
-if __name__ == "__main__":
-    args = parse_args(os.sys.argv[1:])
-
-    n_jobs = args.n_jobs
-    grab_step = args.grab_step
-    root_dir = args.vid_root
-    root_img_dir = args.save_root
-    face_factor = args.face_bbox_expand_factor
-
-    # parse video directory
-    # get videos
-    print('videos from', root_dir)
-    videos = os.listdir(root_dir)
-
-    # get metadata
-    meta_index = list(map(lambda x: x[-4:] == 'json', videos)).index(True)
-    meta = videos.pop(meta_index)
-    meta = os.path.join(root_dir, meta)
-    with open(meta, 'r') as metaf:
-        meta = json.load(metaf)
-
-    # train test split
-    train, val = train_test_split(videos, test_size=args.val_factor, random_state=42)
-    val_n_jobs = int(n_jobs * args.val_factor) + 1
-    train_n_jobs = n_jobs - val_n_jobs
-
-    # create train images subset
-    train_save_path = os.path.join(root_img_dir, 'train')
-    if not os.path.exists(train_save_path):
-        os.mkdir(train_save_path)
+def create_subset(root_dir, meta_file, grab_step, face_factor, videos_list, save_img_dir, subset_name, jobs_number):
+    global LOG_DIR, _ANNOTATIONS
+    save_path = os.path.join(save_img_dir, subset_name)
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
     processes = list()
-    train_split = np.array_split(np.array(train), train_n_jobs)
-    print('spawning {} train handlers'.format(train_n_jobs))
-    for i in range(train_n_jobs):
-        process = Process(target=crop_faces, args=(root_dir, train_split[i], train_save_path, meta, grab_step,
-                                                   face_factor, os.path.join(LOG_DIR, 'train_' + str(i))))
-        processes.append(process)
-        process.start()
-
-    # create validation images subset
-    val_save_path = os.path.join(root_img_dir, 'validation')
-    if not os.path.exists(val_save_path):
-        os.mkdir(val_save_path)
-    val_split = np.array_split(np.array(val), val_n_jobs)
-    print('spawning {} validation handlers'.format(val_n_jobs))
-    for i in range(val_n_jobs):
-        process = Process(target=crop_faces, args=(root_dir, val_split[i], val_save_path, meta, grab_step,
-                                                   face_factor, os.path.join(LOG_DIR, 'val_' + str(i))))
-        processes.append(process)
-        process.start()
+    videos_split = np.array_split(np.array(videos_list), jobs_number)
+    print('spawning {} ' + subset_name + ' handlers'.format(jobs_number))
+    for job_indexer in range(jobs_number):
+        job = Process(target=crop_faces, args=(root_dir, videos_split[job_indexer], save_path, meta_file,
+                                               grab_step, face_factor,
+                                               os.path.join(LOG_DIR, '_'.join([subset_name, str(job_indexer)]))))
+        processes.append(job)
+        job.start()
 
     for p in processes:
         ppid = p.pid
         print('wait for {} process'.format(ppid))
         p.join()
         print('process {} closed'.format(ppid))
+    save_json(save_path, 'labels.json', dict(_ANNOTATIONS))
+
+
+if __name__ == "__main__":
+    args = parse_args(os.sys.argv[1:])
+
+    n_jobs = args.n_jobs
+    frame_grab_step = args.grab_step
+    root_video_directory = args.vid_root
+    root_img_dir = args.save_root
+    face_scale_factor = args.face_bbox_expand_factor
+
+    # parse video directory
+    # get videos
+    print('videos from', root_video_directory)
+    videos = os.listdir(root_video_directory)
+
+    # get metadata
+    meta_index = list(map(lambda x: x[-4:] == 'json', videos)).index(True)
+    meta = videos.pop(meta_index)
+    meta = os.path.join(root_video_directory, meta)
+    with open(meta, 'r') as metaf:
+        meta = json.load(metaf)
+
+    # train test split
+    train, val = train_test_split(videos, test_size=args.val_factor, random_state=42)
+
+    # create train images subset
+    _ANNOTATIONS = Manager().dict()
+    create_subset(root_video_directory, meta, frame_grab_step,
+                  face_scale_factor, train, root_img_dir, 'train', n_jobs)
+
+    # create validation images subset
+    _ANNOTATIONS.clear()
+    create_subset(root_video_directory, meta, frame_grab_step,
+                  face_scale_factor, val, root_img_dir, 'validation', n_jobs)
