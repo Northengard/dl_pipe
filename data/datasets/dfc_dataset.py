@@ -51,7 +51,7 @@ class DFCDataset(Dataset):
         self._data = glob(path.join(data_dir, '*.jpg'))
         self._len = len(self._data)
         self._transform = transform
-        self._annotations = glob(path.join(data_dir, '*.json'))[0]
+        self._annotations = path.join(data_dir, 'labels.json')
         with open(self._annotations) as anf:
             self._annotations = load(anf)
 
