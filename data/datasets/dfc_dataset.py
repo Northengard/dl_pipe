@@ -64,7 +64,7 @@ class DFCDataset(Dataset):
         img_name = path.basename(self._data[index])
         label = self._annotations[img_name]
         sample['images'] = img
-        sample['labels'] = label
+        sample['labels'] = [0, label] if label else [1, 0]
         if self._transform:
             sample = self._transform(sample)
         return sample

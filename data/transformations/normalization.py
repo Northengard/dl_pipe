@@ -135,7 +135,7 @@ class ToTensor(object):
     #     self.with_angles = with_angles
 
     def __call__(self, sample):
-        image = sample['images']
+        image, labels = sample['images'], sample['labels']
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
@@ -144,5 +144,9 @@ class ToTensor(object):
         image = torch.from_numpy(image)
         image = image.to(torch.float32)
 
+        labels = torch.from_numpy(np.array(labels))
+        labels = labels.to(torch.float32)
+
         sample['images'] = image
+        sample['labels'] = labels
         return sample
