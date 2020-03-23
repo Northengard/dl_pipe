@@ -211,7 +211,7 @@ def main(config):
 
         writer.add_scalar('Train/learning_rate', get_learning_rate(optimizer), train_loader_len * epoch)
         writer.add_scalar('Validation/' + config['loss'], loss, (epoch + 1) * train_loader_len)
-        writer.add_scalar('Validation/' + config['loss'], loss, (epoch + 1) * train_loader_len)
+        writer.add_scalar('Validation/' + config['metric'], score, (epoch + 1) * train_loader_len)
 
         lr_scheduler.step(epoch)
         if ((epoch + 1) % config['save_freq']) == 0:
