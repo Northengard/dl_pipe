@@ -1,20 +1,7 @@
 import numpy as np
+from torchvision.transforms import Compose
 from .normalization import LocalRespNorm, ToTensor
 from .rescale import Rescale
-
-
-class Compose(object):
-    def __init__(self, transformations):
-        """
-        Creates pipeline of transformations to apply it one-by-one.
-        :param transformations: (list of transformations), iterable object with transformations to apply.
-        """
-        self.transforms = transformations
-
-    def __call__(self, sample):
-        for t in self.transforms:
-            sample = t(sample)
-        return sample
 
 
 class OneOf(object):
