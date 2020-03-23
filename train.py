@@ -69,7 +69,7 @@ def metric_init(model_parameters, config):
     :return: criterion, metric, optimizer, lr_scheduler, apply_sigmoid
     """
     criterion = getattr(losses, config['loss'])()
-    metric = getattr(metrics, config['metric'])
+    metric = getattr(metrics, config['metric'])()
     optimizer = getattr(optim, config['optimizer'])(model_parameters,
                                                     lr=config['learning_rate']['value'],
                                                     weight_decay=config['weight_decay'])
@@ -99,37 +99,36 @@ def validation(model, data_loader, criterion, metric, epoch, device, apply_sigmo
     :return: average_loss, score_value
     """
     model.eval()
+    metric.reset()
 
     loss_handler = AverageMeter()
-    metric_handler = AverageMeter()
 
     batch_size = config['validation']['batch_size']
     tq = tqdm(total=len(data_loader) * batch_size)
     tq.set_description('Val: Epoch {}'.format(epoch))
+    with torch.no_grad():
+        for itr, batch in enumerate(data_loader):
+            images = batch['images']
+            images = images.to(device)
 
-    for itr, batch in enumerate(data_loader):
-        images = batch['images']
-        images = images.to(device)
+            true_labels = batch['labels']
+            true_labels = true_labels.to(device)
 
-        true_labels = batch['labels']
-        true_labels = true_labels.to(device)
+            output = model(images)
+            if apply_sigmoid:
+                output = torch.sigmoid(output)
 
-        output = model(images)
-        if apply_sigmoid:
-            output = torch.sigmoid(output)
+            loss = criterion(output, true_labels)
+            loss_handler.update(loss.item())
 
-        loss = criterion(output, true_labels)
-        loss_handler.update(loss.item())
+            score = metric(output, true_labels)
 
-        score = metric(output, true_labels)
-        metric_handler.update(score)
+            tq.update(batch_size)
+            tq.set_postfix(loss='{:.4f}'.format(loss_handler.val),
+                           avg_loss='{:.5f}'.format(loss_handler.avg),
+                           avg_score='{:.5f}'.format(score))
 
-        tq.update(batch_size)
-        tq.set_postfix(loss='{:.4f}'.format(loss_handler.val),
-                       avg_loss='{:.5f}'.format(loss_handler.avg),
-                       avg_score='{:.5f}'.format(metric_handler.avg))
-
-        return loss_handler.avg, metric_handler.avg
+        return loss_handler.avg, score
 
 
 def train(model, data_loader, criterion, optimizer, epoch, device, apply_sigmoid, config, summary_writer):
