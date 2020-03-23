@@ -125,10 +125,7 @@ def crop_faces(root_video_dir, videos_list, save_img_dir, meta_data, step, bbox_
                     face_path = os.path.join(save_img_dir, face_path)
                     cv2.imwrite(face_path, face)
                 tq.update(step)
-                if frame_idx > 2:
-                    break
         tq.close()
-        break
 
 
 def create_subset(root_dir, meta_file, grab_step, face_factor, videos_list, save_img_dir, subset_name, jobs_number):
