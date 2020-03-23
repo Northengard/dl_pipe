@@ -139,7 +139,7 @@ class ToTensor(object):
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-        # image = image.transpose((2, 0, 1))
+        image = image.transpose((2, 0, 1))
         # image = np.expand_dims(image, axis=0)
         image = torch.from_numpy(image)
         image = image.to(torch.float32)
