@@ -1,10 +1,12 @@
 from os import path
+from os import listdir
 from glob import glob
 from json import load
 
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+from imageio import get_reader
 
 from utils.storage import load_image
 from data.transformations import Transforms
@@ -30,11 +32,22 @@ def get_dfc_dataset(config, get_dummy=False):
                                   num_workers=config['num_workers'])
 
         test_loader = DataLoader(DFCDataset(data_dir=config['validation']['data_dir'],
-                                            transform=Transforms(config['input_size'])),
+                                            transform=Transforms(config['input_size'],
+                                                                 train=False)),
                                  batch_size=config['validation']['batch_size'],
                                  shuffle=False,
                                  num_workers=config['num_workers'])
     return train_loader, test_loader
+
+
+def get_dfc_video_dataset(config, ):
+    test_loader = DataLoader(DFCVideoDataset(data_dir=config['test']['data_dir'],
+                                             transform=Transforms(config['input_size'],
+                                                                  train=False)),
+                             batch_size=config['validation']['batch_size'],
+                             shuffle=False,
+                             num_workers=config['num_workers'])
+    return test_loader
 
 
 class Dummy(Dataset):
@@ -74,3 +87,22 @@ class DFCDataset(Dataset):
         if self._transform:
             sample = self._transform(sample)
         return sample
+
+
+class DFCVideoDataset(Dataset):
+    def __init__(self, data_dir, transform=None):
+        self._data = list(map(lambda x: path.join(data_dir, x), listdir(data_dir)))
+        self._len = len(self._data)
+        self._transform = transform
+
+    def apply_transform(self, frame):
+        sample = {'images': frame, 'labels': [0, 1]}
+        sample = self._transform(sample)
+        return sample['images']
+
+    def __len__(self):
+        return self._len
+
+    def __getitem__(self, index):
+        reader = get_reader(self._data[index])
+        return reader
