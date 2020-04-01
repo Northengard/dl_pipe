@@ -127,7 +127,7 @@ def validation(model, data_loader, criterion, metric, epoch, device, apply_sigmo
             tq.set_postfix(loss='{:.4f}'.format(loss_handler.val),
                            avg_loss='{:.5f}'.format(loss_handler.avg),
                            avg_score='{:.5f}'.format(score))
-
+        tq.close()
         return loss_handler.avg, score
 
 
@@ -178,6 +178,7 @@ def train(model, data_loader, criterion, optimizer, epoch, device, apply_sigmoid
         tq.update(batch_size)
         tq.set_postfix(loss='{:.4f}'.format(loss_handler.val),
                        avg_loss='{:.5f}'.format(loss_handler.avg))
+    tq.close()
 
 
 def main(config):
