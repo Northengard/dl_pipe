@@ -2,11 +2,22 @@ import numpy as np
 
 
 def accuracy(num_classes=2, ignore=-1):
+    """
+    returns accuracy metric
+    :param num_classes: number of classes in your data
+    :param ignore: classes to ignore. Set -1 to avoid it
+    :return: Accuracy metric
+    """
     return Accuracy(num_classes, ignore=ignore)
 
 
 class Accuracy(object):
     def __init__(self, num_classes, ignore):
+        """
+        calculate accuracy score using the confusion matrix
+        :param num_classes: number of classes
+        :param ignore: classes to ignore
+        """
         self.num_class = num_classes
         self.ignore = ignore
         self.confusion_matrix = np.zeros((self.num_class, self.num_class))

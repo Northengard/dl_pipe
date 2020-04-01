@@ -11,6 +11,12 @@ from data.transformations import Transforms
 
 
 def get_dfc_dataset(config, get_dummy=False):
+    """
+    Returns deep fake detection dataset according to given config
+    :param config: dict with params
+    :param get_dummy: bool, flag to get dummy dataset
+    :return: DFC dataset
+    """
     if get_dummy:
         train_loader = DataLoader(Dummy(length=100), batch_size=config['batch_size'],
                                   shuffle=True,
