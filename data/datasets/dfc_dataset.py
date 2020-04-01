@@ -12,7 +12,7 @@ from utils.storage import load_image
 from data.transformations import Transforms
 
 
-def get_dfc_dataset(config, get_dummy=False):
+def get_dfc_dataloaders(config, get_dummy=False):
     """
     Returns deep fake detection dataset according to given config
     :param config: dict with params
@@ -41,12 +41,8 @@ def get_dfc_dataset(config, get_dummy=False):
 
 
 def get_dfc_video_dataset(config, ):
-    test_loader = DataLoader(DFCVideoDataset(data_dir=config['test']['data_dir'],
-                                             transform=Transforms(config['input_size'],
-                                                                  train=False)),
-                             batch_size=config['validation']['batch_size'],
-                             shuffle=False,
-                             num_workers=config['num_workers'])
+    test_loader = DFCVideoDataset(data_dir=config['test']['data_dir'],
+                                  transform=Transforms(config['input_size'], train=False)),
     return test_loader
 
 

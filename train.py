@@ -15,7 +15,7 @@ from torch.nn import DataParallel
 import models
 import losses
 import metrics
-from data.datasets import get_dfc_dataset
+from data.datasets import get_dfc_dataloaders
 from utils.handlers import AverageMeter, get_learning_rate
 from utils.storage import config_loader, load_weights, save_weights, get_writer
 from utils.logger import Logger
@@ -187,7 +187,7 @@ def main(config):
 
     criterion, metric, optimizer, lr_scheduler, apply_sigmoid = metric_init(model.parameters(), config)
 
-    train_loader, val_loader = get_dfc_dataset(config)
+    train_loader, val_loader = get_dfc_dataloaders(config)
     train_loader_len = len(train_loader)
 
     writer = get_writer(config)
