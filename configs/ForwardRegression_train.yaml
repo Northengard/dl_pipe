@@ -26,8 +26,8 @@ model:
         padding: 0
 
 snapshot:
-    use: no
-    epoch: 0
+    use: yes
+    epoch: 'best_score-18'
 
 num_workers: 8
 parallel: no
@@ -43,7 +43,7 @@ learning_rate:
     value: 0.005
     decay: 0.1
     min_val: 0.00005
-    no_improve: 5
+    no_improve: 30
 weight_decay: 0.0001
 update_step: 1
 clip_grad_threshold: 0.5
@@ -53,10 +53,14 @@ step_counters:
     train: 0
 
 # data
-input_size: [480, 270]
+input_size: [160, 160]
 train:
     data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/images_data/train'
-    batch_size: 30
+    batch_size: 80
 validation:
     data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/images_data/validation'
-    batch_size: 40
+    batch_size: 80
+test:
+    data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/test_videos'
+    apply_sigmoid: yes
+    num_samples: 10
