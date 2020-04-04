@@ -40,9 +40,9 @@ def get_dfc_dataloaders(config, get_dummy=False):
     return train_loader, test_loader
 
 
-def get_dfc_video_dataset(config, ):
+def get_dfc_video_dataset(config):
     test_loader = DFCVideoDataset(data_dir=config['test']['data_dir'],
-                                  transform=Transforms(config['input_size'], train=False)),
+                                  transform=Transforms(config['input_size'], train=False))
     return test_loader
 
 
@@ -88,17 +88,22 @@ class DFCDataset(Dataset):
 class DFCVideoDataset(Dataset):
     def __init__(self, data_dir, transform=None):
         self._data = list(map(lambda x: path.join(data_dir, x), listdir(data_dir)))
+        self.last_index = 0
         self._len = len(self._data)
         self._transform = transform
 
     def apply_transform(self, frame):
         sample = {'images': frame, 'labels': [0, 1]}
         sample = self._transform(sample)
-        return sample['images']
+        return torch.unsqueeze(sample['images'], dim=0)
 
     def __len__(self):
         return self._len
 
+    def get_last_vid_name(self):
+        return path.basename(self._data[self.last_index])
+
     def __getitem__(self, index):
+        self.last_index = index
         reader = get_reader(self._data[index])
         return reader
