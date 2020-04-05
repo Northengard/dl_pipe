@@ -13,4 +13,5 @@ NN Training pipeline for [dfcd task](https://www.kaggle.com/c/deepfake-detection
   * python train.py --config <Your_config_file.yaml>
   
 You can follow an example of "ForwardRegression model" and DFC dataset
-  
+
+Pretrained weights are [available](https://drive.google.com/open?id=1xXj_GmgETHq-S1OTEQZY8JX_9dBxAX2_). This snapshot has ~86 accuracy on validation set
