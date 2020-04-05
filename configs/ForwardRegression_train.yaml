@@ -1,0 +1,66 @@
+experiment:
+    name: 'baseline_model_first'
+    change_tensorboard_log_dir: no
+    tensorboard_log_dir_path: ''
+
+prefix: 'baseline'
+model:
+    name: 'ForwardRegression'
+    num_blocks: 4
+    channels_multiplier: 2
+    start_channels: 3
+    num_classes: 2
+    first_conv:
+        kernel_size: 5
+        stride: 3
+        padding: 2
+        out_channels: 64
+    base_conv:
+        kernel_size: 3
+        stride: 1
+        padding: 1
+    pooling:
+        type: 'max'
+        kernel_size: 2
+        stride: 2
+        padding: 0
+
+snapshot:
+    use: yes
+    epoch: 'best_score-18'
+
+num_workers: 8
+parallel: no
+
+save_freq: 2
+snapshot_save_path: './snapshots'
+
+loss: 'bce_with_logits'
+metric: 'accuracy'
+optimizer: 'SGD'
+
+learning_rate:
+    value: 0.005
+    decay: 0.1
+    min_val: 0.00005
+    no_improve: 30
+weight_decay: 0.0001
+update_step: 1
+clip_grad_threshold: 0.5
+
+num_epochs: 100
+step_counters:
+    train: 0
+
+# data
+input_size: [160, 160]
+train:
+    data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/images_data/train'
+    batch_size: 80
+validation:
+    data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/images_data/validation'
+    batch_size: 80
+test:
+    data_dir: '~/Documents/projects/DeepFake_detection_challenge/dataset/test_videos'
+    apply_sigmoid: yes
+    num_samples: 10
