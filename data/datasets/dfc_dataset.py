@@ -12,32 +12,30 @@ from utils.storage import load_image
 from data.transformations import Transforms
 
 
-def get_dfc_dataloaders(config, get_dummy=False):
+def dfc_dataset(config, is_train=True):
     """
     Returns deep fake detection dataset according to given config
     :param config: dict with params
-    :param get_dummy: bool, flag to get dummy dataset
+    :param is_train: bool, flag to get loader for trainig
     :return: DFC dataset
     """
-    if get_dummy:
-        train_loader = DataLoader(Dummy(length=100), batch_size=config['batch_size'],
-                                  shuffle=True,
-                                  num_workers=config['num_workers'])
-        test_loader = train_loader
+    if is_train:
+        data_dir = config['train']['data_dir']
+        batch_size = config['train']['batch_size']
+        shuffle = True
     else:
-        train_loader = DataLoader(DFCDataset(data_dir=config['train']['data_dir'],
-                                             transform=Transforms(config['input_size'])),
-                                  batch_size=config['train']['batch_size'],
-                                  shuffle=True,
-                                  num_workers=config['num_workers'])
+        data_dir = config['validation']['data_dir']
+        batch_size = config['validation']['batch_size']
+        shuffle = True
 
-        test_loader = DataLoader(DFCDataset(data_dir=config['validation']['data_dir'],
-                                            transform=Transforms(config['input_size'],
-                                                                 train=False)),
-                                 batch_size=config['validation']['batch_size'],
-                                 shuffle=False,
-                                 num_workers=config['num_workers'])
-    return train_loader, test_loader
+    dataset = DFCDataset(data_dir=data_dir,
+                         transform=Transforms(config['input_size'], train=is_train))
+
+    loader = DataLoader(dataset=dataset,
+                        batch_size=batch_size,
+                        shuffle=shuffle,
+                        num_workers=config['num_workers'])
+    return loader
 
 
 def get_dfc_video_dataset(config):

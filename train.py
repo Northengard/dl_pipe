@@ -10,7 +10,7 @@ import torch
 from numpy import inf
 
 # custom
-from data.datasets import get_dfc_dataloaders
+from data import datasets
 from utils.handlers import AverageMeter, get_learning_rate
 from utils import model_init, metric_init
 from utils.storage import config_loader, save_weights, get_writer
@@ -126,7 +126,8 @@ def main(config):
 
     criterion, metric, optimizer, lr_scheduler, apply_sigmoid = metric_init(model.parameters(), config)
 
-    train_loader, val_loader = get_dfc_dataloaders(config)
+    train_loader = getattr(datasets, config['dataset_name'])(config, is_train=True)
+    val_loader = getattr(datasets, config['dataset_name'])(config, is_train=False)
     train_loader_len = len(train_loader)
 
     writer = get_writer(config)
